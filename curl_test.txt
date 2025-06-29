@@ -1,0 +1,12 @@
+curl -X POST http://localhost:8000/submit-order \
+   -H "Content-Type: application/json" \
+   -d '{
+        "company_name": "ООО Ромашка",
+        "phone": "+79991234567",
+        "email": "example@mail.com",
+        "material": "ПВХ",
+        "material_ownership": "TRUE",
+        "cutting_required": "TRUE",
+        "quantity": "100",
+        "design_required": "FALSE"
+       }'

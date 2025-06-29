@@ -1,103 +1,311 @@
-import Image from "next/image";
+'use client';
+import { useState } from 'react';
 
-export default function Home() {
+// Цвета и базовые стили
+const COLORS = {
+  primary: "#F8B500",
+  primaryDark: "#E6A200",
+  white: "#fff",
+  inputBg: "#f9f9fb",
+  inputBorder: "#ebecef",
+  buttonText: "#fff",
+  buttonFrom: "#fde09b",
+  buttonTo: "#f8b500",
+  shadow: "rgba(68,70,90,0.09)",
+  subtle: "#434D5A"
+};
+
+export default function PrintForm() {
+  const [form, setForm] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    material: '',
+    ownMaterial: false,
+    cutRequired: false,
+    volume: '',
+    designRequired: false,
+  });
+
+  const [submitted, setSubmitted] = useState(false);
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
+    const { name, type, checked, value } = e.target;
+    setForm((f) => ({
+      ...f,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmitted(true);
+  }
+
+  function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
+    let numbers = e.target.value.replace(/\D/g, '');
+    if (numbers.startsWith("8")) numbers = "7" + numbers.substring(1);
+    if (!numbers.startsWith("7")) numbers = "7" + numbers;
+    numbers = numbers.slice(0, 11);
+    let phone = "+7";
+    if (numbers.length > 1) phone += "-" + numbers.slice(1, 4);
+    if (numbers.length > 4) phone += "-" + numbers.slice(4, 7);
+    if (numbers.length > 7) phone += "-" + numbers.slice(7, 9);
+    if (numbers.length > 9) phone += "-" + numbers.slice(9, 11);
+    setForm(f => ({ ...f, phone }));
+  }
+
+  if (submitted) return (
+    <div style={{
+      maxWi: '25%',
+      margin: "40px auto",
+      background: COLORS.white,
+      borderRadius: 30,
+      boxShadow: `0 6px 38px 0 ${COLORS.shadow}`,
+      padding: "48px 32px",
+      textAlign: "center"
+    }}>
+      <h2 style={{margin: '18px 0 10px', fontWeight: 700}}>Спасибо!</h2>
+      <div style={{color: COLORS.subtle}}>Ваша заявка отправлена. Мы свяжемся с вами в ближайшее время.</div>
+    </div>
+  );
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div style={{
+      maxWidth: '100%',
+      margin: "50px auto",
+      background: COLORS.white,
+      borderRadius: 34,
+      boxShadow: `0 8px 40px 0 ${COLORS.shadow}`,
+      padding: "48px 38px 34px 38px",
+      fontFamily: "Manrope, Arial, sans-serif",
+      minWidth: 0
+    }}>
+      <form onSubmit={handleSubmit} style={{ width: '100%' }}>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <h1 style={{
+          textAlign: "center",
+          margin: "22px 0 7px 0",
+          fontSize: 27,
+          fontWeight: 700,
+          letterSpacing: 0.02,
+          color: "#222"
+        }}>Заявка на печать</h1>
+
+        <p style={{
+          textAlign: "center",
+          color: COLORS.subtle,
+          margin: "0 0 24px 0",
+          fontWeight: 500
+        }}>
+          Получите быстрый расчет стоимости — оставьте контактные данные!
+        </p>
+
+        <FieldLabel>Компания / Имя Фамилия
+          <FormInput
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            autoComplete="off"
+            placeholder=""
+            required
+          />
+        </FieldLabel>
+
+        <FieldLabel>Телефон
+          <FormInput
+            name="phone"
+            value={form.phone}
+            onChange={handlePhoneChange}
+            autoComplete="off"
+            placeholder="+7-___-___-__-__"
+            required
+          />
+        </FieldLabel>
+
+        <FieldLabel>Email
+          <FormInput
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={handleChange}
+            autoComplete="off"
+            required
+          />
+        </FieldLabel>
+
+        <FieldLabel>Материал для печати
+          <FormSelect
+            name="material"
+            value={form.material}
+            onChange={handleChange}
+            required
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+            <option value="" disabled>Выберите…</option>
+            <option value="Фанера">Фанера</option>
+            <option value="Стекло">Стекло</option>
+          </FormSelect>
+        </FieldLabel>
+
+        <div style={{ display: "flex", gap: 16, margin: "10px 0 0 0" }}>
+          <CheckboxLabel>
+            <input
+              name="ownMaterial"
+              type="checkbox"
+              checked={form.ownMaterial}
+              onChange={handleChange}
+              style={checkboxStyle}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <span>Предоставлю свой материал</span>
+          </CheckboxLabel>
+          <CheckboxLabel>
+            <input
+              name="cutRequired"
+              type="checkbox"
+              checked={form.cutRequired}
+              onChange={handleChange}
+              style={checkboxStyle}
+            />
+            <span>Требуется раскрой</span>
+          </CheckboxLabel>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+
+        <FieldLabel style={{ marginTop: 12 }}>Тираж (шт. или м²)
+          <FormInput
+            name="volume"
+            value={form.volume}
+            onChange={handleChange}
+            autoComplete="off"
+            required
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        </FieldLabel>
+
+        <div style={{ margin: "6px 0 18px 1px" }}>
+          <CheckboxLabel>
+            <input
+              name="designRequired"
+              type="checkbox"
+              checked={form.designRequired}
+              onChange={handleChange}
+              style={checkboxStyle}
+            />
+            <span>Требуются услуги дизайна</span>
+          </CheckboxLabel>
+        </div>
+
+        <button type="submit" style={buttonStyle}>Отправить заявку</button>
+      </form>
     </div>
   );
 }
+
+function Logo() {
+  return (
+    <div style={{
+      width: 54,
+      height: 54,
+      background: "linear-gradient(135deg,#fde09b 0%,#f8b500 100%)",
+      margin: "0 auto",
+      borderRadius: "50%",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center"
+    }}>
+      <span style={{
+        fontWeight: 800,
+        fontSize: 30,
+        color: "#fff",
+        fontFamily: "inherit",
+        textShadow: "0 2px 10px #fff5"
+      }}>S</span>
+    </div>
+  );
+}
+
+function FieldLabel({ children, style }: any) {
+  return <label style={{
+    display: "block",
+    marginBottom: 17,
+    color: "#232323",
+    fontWeight: 500,
+    fontSize: 16,
+
+  }}>{children}</label>
+}
+
+function FormInput(props: any) {
+  return <input {...props} style={{
+    width: "100%",
+    fontSize: 17,
+    marginTop: 8,
+    marginBottom: 2,
+    padding: "15px 14px",
+    borderRadius: 10,
+    border: `1.5px solid ${COLORS.inputBorder}`,
+    background: COLORS.inputBg,
+    transition: "border-color .18s",
+    outline: "none",
+    fontWeight: 500,
+    color: "#232323"
+  }}
+    onFocus={e => e.currentTarget.style.borderColor = COLORS.primary}
+    onBlur={e => e.currentTarget.style.borderColor = COLORS.inputBorder}
+  />
+}
+
+function FormSelect(props: any) {
+  return <select {...props} style={{
+    width: "100%",
+    fontSize: 17,
+    marginTop: 8,
+    marginBottom: 2,
+    padding: "15px 14px",
+    borderRadius: 10,
+    border: `1.5px solid ${COLORS.inputBorder}`,
+    background: COLORS.inputBg,
+    color: "#232323",
+    transition: "border-color .18s",
+    fontWeight: 500,
+    outline: "none"
+  }}
+    onFocus={e => e.currentTarget.style.borderColor = COLORS.primary}
+    onBlur={e => e.currentTarget.style.borderColor = COLORS.inputBorder}
+  />;
+}
+
+const CheckboxLabel = (props: any) => (
+  <label style={{
+    display: "flex",
+    alignItems: "center",
+    gap: 7,
+    color: "#413a23",
+    fontSize: 15,
+    fontWeight: 500
+  }}>{props.children}</label>
+);
+
+const checkboxStyle = {
+  accentColor: COLORS.primary,
+  width: 19,
+  height: 19,
+  borderRadius: 6,
+  marginRight: 4,
+  marginTop: 1
+} as React.CSSProperties;
+
+const buttonStyle = {
+  display: 'block',
+  width: "100%",
+  marginTop: 18,
+  fontWeight: 700,
+  fontSize: 19,
+  padding: "15px 0",
+  borderRadius: 13,
+  letterSpacing: 0.03,
+  background: `linear-gradient(90deg, #fde09b, #f8b500 90%)`,
+  color: "#fff",
+  border: "none",
+  cursor: "pointer",
+  boxShadow: "0 2px 8px #fde3a645",
+  transition: "opacity .18s"
+};

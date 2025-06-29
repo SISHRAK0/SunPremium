@@ -1,6 +1,9 @@
 import gspread
 from google.oauth2.service_account import Credentials
 from flask import Flask, request, jsonify
+from flask_cors import CORS
+
+
 
 app = Flask(__name__)
 
@@ -8,6 +11,8 @@ app = Flask(__name__)
 SCOPES = ['https://www.googleapis.com/auth/spreadsheets']
 CREDS_FILE = 'credentials.json'  
 SPREADSHEET_ID = '1c1Y_ySgi6Nai7xd362ItLKqG0Ouf4msIIN79VPDL6TY'  
+CORS(app, origins=["http://localhost:3000"])
+
 
 # Авторизация
 def get_sheet():

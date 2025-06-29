@@ -37,10 +37,33 @@ export default function PrintForm() {
     }));
   }
 
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+async function handleSubmit(e: React.FormEvent) {
+  e.preventDefault();
+
+  const payload = {
+    company_name: form.name,
+    phone: form.phone,
+    email: form.email,
+    material: form.material,
+    material_ownership: form.ownMaterial,
+    cutting_required: form.cutRequired,
+    quantity: form.volume,
+    design_required: form.designRequired,
+  };
+
+  try {
+    const res = await fetch('http://localhost:8000/submit-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) throw new Error('Ошибка отправки');
     setSubmitted(true);
+  } catch (e) {
+    alert('Ошибка при отправке заявки!');
   }
+}
 
   function handlePhoneChange(e: React.ChangeEvent<HTMLInputElement>) {
     let numbers = e.target.value.replace(/\D/g, '');
@@ -118,7 +141,6 @@ export default function PrintForm() {
             value={form.phone}
             onChange={handlePhoneChange}
             autoComplete="off"
-            placeholder="+7-___-___-__-__"
             required
           />
         </FieldLabel>

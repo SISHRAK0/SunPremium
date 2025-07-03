@@ -21,7 +21,6 @@ CORS(app, origins=["http://localhost:3000"])
 # Настройки локального хранилища
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-BASE_URL = 'http://localhost:8000/files'  # Измените на ваш домен в продакшене
 
 # Авторизация Google Sheets
 def get_sheet(sheet_name):
@@ -43,12 +42,12 @@ def save_file_locally(file):
     file_path = os.path.join(UPLOAD_FOLDER, secure_name)
     file.save(file_path)
     
-    return f"{BASE_URL}/{secure_name}"
+    return "uploads/" + secure_name  # Возвращаем только имя файла
 
 @app.route('/submit-order', methods=['POST'])
 def submit_lead():
     try:
-        file_urls = []
+        file_name = None  # Будем хранить только имя файла
         data = None
         
         if request.content_type.startswith('multipart/form-data'):
@@ -56,22 +55,20 @@ def submit_lead():
             if not data_str:
                 return jsonify({"error": "Missing 'data' field"}), 400
             
-            cleaned_data_str = data_str
             try:
-                data = json.loads(cleaned_data_str)
+                data = json.loads(data_str)
             except json.JSONDecodeError as e:
                 app.logger.error(f"JSON decode error: {e}")
                 return jsonify({"error": "Invalid JSON in 'data' field"}), 400
             
-            files = request.files.getlist('file')
-            for file in files:
-                file_url = save_file_locally(file)
-                if file_url:
-                    file_urls.append(file_url)
+            # Обрабатываем первый файл (если есть)
+            if 'file' in request.files:
+                file = request.files['file']
+                if file.filename != '':
+                    file_name = save_file_locally(file)
         
         elif request.content_type == 'application/json':
             data = request.json
-        
         else:
             return jsonify({"error": "Unsupported Media Type"}), 415
         
@@ -79,8 +76,8 @@ def submit_lead():
             return jsonify({"error": "No data provided"}), 400
             
         required_fields = ['name', 'phone', 'email', 'material', 
-                          'thickness', 'ownMaterial', 'cutRequired', 
-                          'volume', 'designRequired']
+                         'thickness', 'ownMaterial', 'cutRequired', 
+                         'volume', 'designRequired']
         
         if missing := [field for field in required_fields if field not in data]:
             return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
@@ -88,39 +85,45 @@ def submit_lead():
         lead_id = str(uuid.uuid4())
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         
-        material_ownership = "Материал заказчика" if data.get('material_ownership') == "TRUE" else "Наш материал"
-        cutting_required = "Требуется раскрой" if data.get('cutting_required') == "TRUE" else "Не требуется раскрой"
-        design_required = "Требуется дизайн" if data.get('design_required') == "TRUE" else "Дизайн не требуется"
-        pisya = data.get('material', '') + ' ' + data.get('thickness','') + 'мм'
+        material_ownership = "Материал заказчика" if data.get('ownMaterial') == "TRUE" else "Наш материал"
+        cutting_required = "Требуется раскрой" if data.get('cutRequired') == "TRUE" else "Не требуется раскрой"
+        design_required = "Требуется дизайн" if data.get('designRequired') == "TRUE" else "Дизайн не требуется"
+        material_with_thickness = f"{data.get('material', '')} {data.get('thickness','')}мм"
+        phone = data.get('phone', '')
+        for s in phone:
+            if s == '+':
+                phone = phone.replace(s, '')
+            if s == '-':
+                phone = phone.replace(s, '')
+            if s == ' ':
+                phone = phone.replace(s, '')
+            if s == '7':
+                phone = phone.replace(s, '')
+        
         row = [
             lead_id,
             timestamp,
             data.get('name', ''),
-            data.get('phone', ''),
+            phone,
             data.get('email', ''),
-            pisya,
-            data.get('ownMaterial', ''),
-            data.get('cutRequired', ''),
+            material_with_thickness,
+            material_ownership,
+            cutting_required,
             data.get('volume', ''),
-            data.get('designRequired', ''),
+            design_required,
             data.get('comment', ''),
-            # file_urls,
-            'Новый',
-            # ', '.join(file_urls) if file_urls else ''
+            file_name if file_name else '',  
+            'Новый'
         ]
-        print(row)
         
         sheet = get_sheet('Лиды')
-
-        print("fdfdfd")
         sheet.append_row(row)
-        print("fdfdfd2")
 
         return jsonify({
             "success": True,
             "message": "Заявка успешно добавлена",
             "lead_id": lead_id,
-            "file_urls": file_urls
+            "file_name": file_name  # Возвращаем только имя файла
         }), 200
     
     except Exception as e:

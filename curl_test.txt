@@ -16,7 +16,8 @@ curl -X POST http://localhost:8000/submit-order \
 
 
        curl -X POST http://localhost:8000/submit-order \
-  -F "data='{
+   -H "Content-Type: application/json" \
+   -F "data='{
     \"company_name\": \"ООО Ромашка\",
     \"phone\": \"+7 999 123-45-67\",
     \"email\": \"info@romashka.ru\",
@@ -26,4 +27,9 @@ curl -X POST http://localhost:8000/submit-order \
     \"quantity\": \"150 м²\",
     \"design_required\": \"TRUE\"
   }'" \
-  -F "files=@/Users/sishrak/Desktop/SunPremium/52.png" 
+  -F "files=Users/sishrak/Desktop/SunPremium/52.png" 
+
+
+  curl -X POST http://localhost:8000/submit-order \
+  -F "data={"name":"\"Тлижу2\" ООО","phone":"+7-434-324-32-42","email":"best.ivan.pasechnik@gmail.com","material":"Фанера","thickness":"6","ownMaterial":"TRUE","cutRequired":"False","volume":"12","designRequired":"False","comment":"22"}" \
+  -F "files=@/Users/sishrak/Desktop/SunPremium/52.png"

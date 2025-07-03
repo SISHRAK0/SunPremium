@@ -49,14 +49,14 @@ export default function PrintForm() {
     designRequired: false,
     consent: false,
     comment: "",
-    fileUrl: "",
   });
 
   const [submitted, setSubmitted] = useState(false);
   const [fileUploading, setFileUploading] = useState(false);
   const [fileError, setFileError] = useState("");
   const [showConsentError, setShowConsentError] = useState(false);
-
+  const [file, setFile] = useState(null);
+  
   function handleChange(e) {
     const { name, type, checked, value } = e.target;
     setForm((f) => ({
@@ -66,39 +66,47 @@ export default function PrintForm() {
     }));
   }
 
-  async function handleSubmit(e) {
-    e.preventDefault()
+async function handleSubmit(e) {
+  e.preventDefault();
 
-    if (!form.consent) {
-      setShowConsentError(true);
-      setTimeout(() => setShowConsentError(false), 2500);
-      return;
-    }
-    const payload = {
-      company_name: form.name,
-      phone: form.phone,
-      email: form.email,
-      material: form.material,
-      thickness: form.thickness,
-      material_ownership: form.ownMaterial,
-      cutting_required: form.cutRequired,
-      quantity: form.volume,
-      design_required: form.designRequired,
-      comment: form.comment,
-      file_url: form.fileUrl,
-    };
-    try {
-      const res = await fetch("http://localhost:8000/submit-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!res.ok) throw new Error("Ошибка отправки");
-      setSubmitted(true);
-    } catch (e) {
-      alert(`Ошибка при отправке заявки! ${e}`);
-    }
+  if (!form.consent) {
+    setShowConsentError(true);
+    setTimeout(() => setShowConsentError(false), 2500);
+    return;
   }
+
+  const dataPayload = {
+    name: form.name,
+    phone: form.phone,
+    email: form.email,
+    material: form.material,
+    thickness: form.thickness, // если нужен в payload
+    ownMaterial: form.ownMaterial ? "TRUE" : "False",
+    cutRequired: form.cutRequired ? "TRUE" : "False",
+    volume: form.volume,
+    designRequired: form.designRequired ? "TRUE" : "False",
+    comment: form.comment,
+  };
+
+  const formData = new FormData();
+  formData.append('data', JSON.stringify(dataPayload));
+  if (file) {
+    formData.append('file', file); // ключ - "files" (без [])
+  }
+
+  try {
+    const res = await fetch("http://localhost:8000/submit-order", {
+      method: "POST",
+      body: formData,
+    });
+    if (!res.ok) throw new Error("Ошибка отправки");
+    setSubmitted(true);
+  } catch (e) {
+    alert(`Ошибка при отправке заявки! ${e}`);
+  }
+}
+
+
 
   async function handleFileChange(e) {
     const file = e.target.files && e.target.files[0];
@@ -110,27 +118,11 @@ export default function PrintForm() {
       // При необходимости сбросьте выбранный файл
       e.target.value = "";
       return;
+    }else{
+      setFile(e.target.files[0])
+      console.log("Загрузили " + e.target.files[0].name)
     }
-
-    setFileError("");
-    setFileUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("http://localhost:8000/upload", {
-        method: "POST",
-        body: formData,
-      });
-      if (!res.ok) throw new Error("Ошибка загрузки файла");
-      const data = await res.json();
-      if (!data.url) throw new Error("Сервер не вернул ссылку на файл");
-      setForm((f) => ({ ...f, fileUrl: data.url }));
-    } catch (err) {
-      setFileError("Не удалось загрузить файл. Попробуйте еще раз.");
-    } finally {
-      setFileUploading(false);
-    }
+    
   }
 
 

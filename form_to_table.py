@@ -45,14 +45,6 @@ def save_file_locally(file):
     
     return f"{BASE_URL}/{secure_name}"
 
-def clean_json_string(json_str):
-    """Удаляет лишние кавычки и экранирования из JSON строки"""
-    if json_str.startswith("'") and json_str.endswith("'"):
-        json_str = json_str[1:-1]
-    json_str = json_str.replace('\\"', '"')
-    json_str = re.sub(r'(?<!\\)\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})', '', json_str)
-    return json_str
-
 @app.route('/submit-order', methods=['POST'])
 def submit_lead():
     try:
@@ -64,7 +56,7 @@ def submit_lead():
             if not data_str:
                 return jsonify({"error": "Missing 'data' field"}), 400
             
-            cleaned_data_str = clean_json_string(data_str)
+            cleaned_data_str = data_str
             try:
                 data = json.loads(cleaned_data_str)
             except json.JSONDecodeError as e:
@@ -88,7 +80,7 @@ def submit_lead():
             
         required_fields = ['name', 'phone', 'email', 'material', 
                           'thickness', 'ownMaterial', 'cutRequired', 
-                          'volume', 'designRequired', 'consent']
+                          'volume', 'designRequired']
         
         if missing := [field for field in required_fields if field not in data]:
             return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
@@ -99,28 +91,31 @@ def submit_lead():
         material_ownership = "Материал заказчика" if data.get('material_ownership') == "TRUE" else "Наш материал"
         cutting_required = "Требуется раскрой" if data.get('cutting_required') == "TRUE" else "Не требуется раскрой"
         design_required = "Требуется дизайн" if data.get('design_required') == "TRUE" else "Дизайн не требуется"
+        pisya = data.get('material', '') + ' ' + data.get('thickness','') + 'мм'
         row = [
             lead_id,
             timestamp,
             data.get('name', ''),
             data.get('phone', ''),
             data.get('email', ''),
-            data.get('material', ''),
-            data.get('thickness', ''),
+            pisya,
             data.get('ownMaterial', ''),
             data.get('cutRequired', ''),
             data.get('volume', ''),
             data.get('designRequired', ''),
-            data.get('consent', ''),
             data.get('comment', ''),
-            file_urls,
+            # file_urls,
             'Новый',
-            ', '.join(file_urls) if file_urls else ''
+            # ', '.join(file_urls) if file_urls else ''
         ]
+        print(row)
         
         sheet = get_sheet('Лиды')
+
+        print("fdfdfd")
         sheet.append_row(row)
-        
+        print("fdfdfd2")
+
         return jsonify({
             "success": True,
             "message": "Заявка успешно добавлена",

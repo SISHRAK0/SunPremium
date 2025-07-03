@@ -1,3 +1,5 @@
+"use client";
+
 export function Header() {
   return (
     <header
@@ -8,7 +10,7 @@ export function Header() {
         display: 'flex',
         paddingLeft: '5%',
         paddingRight: '5%',
-        justifyContent: 'space-between', 
+        justifyContent: 'space-between',
         boxShadow: '0 2px 16px #f6ec8c10',
         backdropFilter: 'blur(1px)',
         minHeight: 70,
@@ -23,8 +25,8 @@ export function Header() {
             src="/header_logo.svg"
             alt="Sun Premium logo"
             style={{
-              height: "100%",           // <--- всю высоту родителя (60px)
-              width: "auto",            // wrap_content по ширине
+              height: "100%",
+              width: "auto",
               display: "block"
             }}
           />
@@ -41,7 +43,7 @@ export function Header() {
           </div>
         </div>
       </div>
-      <div style={{
+      <div className="header-about" style={{
         textAlign: "right",
         fontSize: 17,
         color: "#272727",
@@ -50,6 +52,13 @@ export function Header() {
         г. Санкт-Петербург, ул. Ольги Берггольц, 35А,<br />
         10:00 – 18:00 с пн. по пт.
       </div>
+      <style jsx>{`
+        @media (max-width: 700px) {
+          .header-about {
+            display: none !important;
+          }
+        }
+      `}</style>
     </header>
   );
 }

@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Header/>
         <main
           style={{
-            minHeight: "calc(100vh - 116px)", // чтобы под шапкой
+            minHeight: "calc(100vh - 116px)", 
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center'

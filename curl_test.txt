@@ -10,3 +10,20 @@ curl -X POST http://localhost:8000/submit-order \
         "quantity": "100",
         "design_required": "FALSE"
        }'
+
+
+       Nx6MIefFfnu& ramzeznh_12
+
+
+       curl -X POST http://localhost:8000/submit-order \
+  -F "data='{
+    \"company_name\": \"ООО Ромашка\",
+    \"phone\": \"+7 999 123-45-67\",
+    \"email\": \"info@romashka.ru\",
+    \"material\": \"ПВХ 3мм\",
+    \"material_ownership\": \"TRUE\",
+    \"cutting_required\": \"FALSE\",
+    \"quantity\": \"150 м²\",
+    \"design_required\": \"TRUE\"
+  }'" \
+  -F "files=@/Users/sishrak/Desktop/SunPremium/52.png" 

@@ -50,12 +50,13 @@ export default function PrintForm() {
     consent: false,
     comment: "",
   });
-
   const [submitted, setSubmitted] = useState(false);
   const [fileUploading, setFileUploading] = useState(false);
   const [fileError, setFileError] = useState("");
   const [showConsentError, setShowConsentError] = useState(false);
   const [file, setFile] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   
   function handleChange(e) {
     const { name, type, checked, value } = e.target;
@@ -68,12 +69,17 @@ export default function PrintForm() {
 
 async function handleSubmit(e) {
   e.preventDefault();
+  
+
+  if(isSubmitting) return;
 
   if (!form.consent) {
     setShowConsentError(true);
     setTimeout(() => setShowConsentError(false), 2500);
     return;
   }
+
+  setIsSubmitting(true); 
 
   const dataPayload = {
     name: form.name,
@@ -102,7 +108,9 @@ async function handleSubmit(e) {
     if (!res.ok) throw new Error("Ошибка отправки");
     setSubmitted(true);
   } catch (e) {
-    alert(`Ошибка при отправке заявки! ${e}`);
+    alert(`Ошибка при отправке заявки, попробуйте позже`);
+  } finally {
+    setIsSubmitting(false); // ← даём снова нажимать только после завершения
   }
 }
 
@@ -120,7 +128,6 @@ async function handleSubmit(e) {
       return;
     }else{
       setFile(e.target.files[0])
-      console.log("Загрузили " + e.target.files[0].name)
     }
     
   }
@@ -312,7 +319,7 @@ async function handleSubmit(e) {
           <FileUpload
             onChange={handleFileChange}
             disabled={fileUploading}
-            fileUrl={form.fileUrl}
+            fileUrl={file}
             fileError={fileError}
           />
         </div>
@@ -497,11 +504,7 @@ function FileUpload({ onChange, disabled, fileUrl, fileError }) {
       {(fileUrl || fileError) && (
         <div style={{ marginTop: 8 }}>
           {fileUrl && (
-            <span>
-              <a
-                href={fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
+            <span
                 style={{
                   color: COLORS.primaryDark,
                   textDecoration: "underline",
@@ -509,8 +512,7 @@ function FileUpload({ onChange, disabled, fileUrl, fileError }) {
                   borderRadius: 3,
                   padding: "1px 6px",
                 }}>
-                файл прикреплён
-              </a>
+                {fileUrl.name}
             </span>
           )}
           {fileError && (
